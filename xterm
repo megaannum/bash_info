@@ -1,0 +1,50 @@
+#!/bin/bash
+#
+# xterm
+#
+# Place this in your path before /usr/bin/xterm
+#
+# This script is only needed when a new Xterm is started. When I
+#  reboot Linux (Fedora) and restart the Window Manager (KDE),
+#  the Window Manager "knows" what applications were running on
+#  its previous shutdown (and those application's command-line 
+#  options) so it restarts the /usr/bin/xterm, not this script 
+#  named xterm.
+#
+
+# Tailor xterm options as desired.
+# I require unicode characters for my Vim forms so I use the iso10646
+#   fixed width font.
+doXterm() {
+    /usr/bin/xterm -g 80x30 -bg lightgrey -sl 1000 +si -fn '-misc-fixed-medium-r-normal-*-20-*-*-*-*-*-iso10646-*' $@ &
+}
+
+
+# Location of bash_info files and directories
+export BASH_INFO="$HOME/.bash_info"
+
+# Make if it does not exist
+if [[ ! -d $BASH_INFO ]]; then
+    /bin/mkdir $BASH_INFO
+fi
+
+# Find new bash id
+declare -i BASH_ID=0
+while [[ -e $BASH_INFO/xterm_$BASH_ID ]]; do
+    BASH_ID=$(( $BASH_ID + 1))
+done
+
+# Make unique directory based upon bash id
+/bin/mkdir $BASH_INFO/xterm_$BASH_ID
+
+# Store bash id, bash_info directory and command to source INIT_FILE 
+# in the xterm's local init file
+LOCAL_INIT_FILE=" $BASH_INFO/xterm_$BASH_ID/LOCAL_INIT_FILE"
+echo "# LOCAL_INIT_FILE" >  $LOCAL_INIT_FILE
+echo "export BASH_ID=$BASH_ID" >>  $LOCAL_INIT_FILE
+echo "export BASH_INFO=$HOME/.bash_info" >> $LOCAL_INIT_FILE
+echo ". $BASH_INFO/INIT_FILE" >>  $LOCAL_INIT_FILE
+
+doXterm -e /bin/bash --init-file $LOCAL_INIT_FILE
+
+

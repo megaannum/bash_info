@@ -1,0 +1,68 @@
+# INIT_FILE
+
+. $HOME/.bashrc
+
+XTERM_DIR=$BASH_INFO/xterm_$BASH_ID
+export HISTFILE=$XTERM_DIR/history
+export HISTSIZE=1000
+echo HISTFILE=$HISTFILE
+
+
+# Make history file if it does not exist
+if [[ ! -e $HISTFILE ]]; then
+    touch $HISTFILE
+fi
+
+#echo $XTERM_DIR/ENV_FILE
+
+# Read the change directory file if it exists
+if [[ -f $XTERM_DIR/CD_FILE ]]; then
+   . $XTERM_DIR/CD_FILE
+fi
+# Read the kde desktop information file if it exists
+
+# This is not needed
+if [[ -f $XTERM_DIR/DESKTOP_FILE ]]; then
+   . $XTERM_DIR/DESKTOP_FILE
+fi
+
+# Define cd function which 1) calls the builtin cd function and 
+# then 2) save each new directory in the $XTERM_DIR/CD_FILE
+function cd() {
+    if [[ $# -eq 0 ]]; then
+        builtin cd
+    else
+        builtin cd "$1"
+    fi
+    echo "cd $PWD" > $XTERM_DIR/CD_FILE
+}
+
+# On exit, save the current directory and call the builtin exit function.
+function on_exit() {
+    echo "cd $PWD" > $XTERM_DIR/CD_FILE
+    # qdbus
+    #local dt=$( qdbus  org.kde.kwin /KWin  org.kde.KWin.currentDesktop )
+    # echo "qdbus  org.kde.kwin /KWin org.kde.KWin.setCurrentDesktop $dt" > $XTERM_DIR/DESKTOP_FILE
+    # echo "dcop kwin KWinInterface setCurrentDesktop $dt" > $XTERM_DIR/DESKTOP_FILE
+    builtin exit 0
+}
+
+# trap so we can save information
+trap on_exit SIGTERM EXIT
+
+# Restart vi command if found
+if [[ -e $HISTFILE ]]; then
+    CMD=$(tail -1 $HISTFILE)
+    #echo CMDO=$CMD
+    if [[ "$CMD" == "exit" ]]; then
+        CMD=$(tail -2 $HISTFILE | grep -v exit)
+    fi
+    if [[ "$CMD" == "exit" ]]; then
+        CMD=$(tail -3 $HISTFILE | grep -v exit)
+    fi
+    #echo CMD1=$CMD
+    if [[ $CMD =~ "vi" ]]; then
+        eval $CMD
+    fi
+fi
+
