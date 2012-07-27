@@ -16,7 +16,6 @@ and start Vim on the correct file, if there was a Vim session.
 
 I wrote this, maybe, 10 years ago, but only now am I sharing.
 
-
 ## Getting started
 
 Place the xterm script in your path prior to /usr/bin/xterm.
@@ -35,7 +34,6 @@ Place the INIT_FILE in the bash_info directory.
 Currently, for the xterm_{#} directories under the bash_info directory 
 there is no cleanup/garbage-collection  if the xterm has exited
 manually.
-
 
 ## TODO
 
